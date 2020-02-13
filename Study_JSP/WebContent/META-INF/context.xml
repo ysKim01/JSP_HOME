@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<context>
+	<Resource
+		name="connOracle"
+		driverClassName="oracle.jdbc.driver.OracleDriver"
+		auth="Container"
+		type="javax.sql.DataSource"
+		url="jdbc:oracle:thin:@localhost:1521:orcl"
+		username="yskim"
+		password="yskim"
+		maxActive="50"
+		maxWait="-1"
+	/>
+</context>
