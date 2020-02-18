@@ -1,0 +1,11 @@
+1  '/'    -> 가장 최상의 디렉토리로 이동한다.(Web root)
+2  './'   -> 파일이 현재 디렉토리를 의미한다.
+3  '../'  -> 상위 디렉토리로 이동한다.
+
+contextPath : 
+	- WAS(Web Application Server)에서 웹 어플리케이션을 구분하기 위한 path
+	- 이클립스에선 프로젝트 까지의 경로에 해당된다.
+	- 톰켓의 server.xml의 Context태그에서 설정 가능하다.
+
+이클립스 파일구조
+- root/project/Webcontent하위폴더
