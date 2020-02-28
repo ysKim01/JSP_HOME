@@ -10,14 +10,19 @@ public class MemberVO {
 	private Date joinDate;
 	
 	public MemberVO() {
-		System.out.println("MemberVO Contructor ");
 	}
-	public MemberVO(String id, String pw, String name, String eamil) {
-		System.out.println("MemberVO Contructor ");
+	public MemberVO(String id, String pw, String name, String email) {
 		this.id = id;
 		this.pw = pw;
 		this.name = name;
 		this.email = email;
+	}
+	public MemberVO(String id, String pw, String name, String email, Date joinDate) {
+		this.id = id;
+		this.pw = pw;
+		this.name = name;
+		this.email = email;
+		this.joinDate = joinDate;
 	}
 
 	// Getter & Setter

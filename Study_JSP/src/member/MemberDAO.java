@@ -33,7 +33,7 @@ public class MemberDAO {
 		List<MemberVO> list = new ArrayList<MemberVO>();
 		try {
 			con = dataFactory.getConnection();
-			String query = "select * from t_member";
+			String query = "select * from t_member order by joinDate desc";
 			System.out.println(query);
 			ps = con.prepareStatement(query);
 			ResultSet rs = ps.executeQuery();
@@ -101,44 +101,51 @@ public class MemberDAO {
 		}
 	}
 	
-	public List<MemberVO> searchMember(MemberVO memberVO) {
-		List<MemberVO> list = new ArrayList<MemberVO>();
-		String inputName = (String)memberVO.getName();
+	public MemberVO findMember(String id) {
+		MemberVO memInfo = new MemberVO();
 		try {
-			System.out.println(inputName);
 			con = dataFactory.getConnection();
-			String query = "select * from t_member";
-			if(inputName!=null && inputName.length()!=0) {
-				query += " where name=?";
-				ps = con.prepareStatement(query);
-				ps.setString(1, inputName);
-			}else {
-				ps = con.prepareStatement(query);
-			}
-			
+			String query = "select * from t_member where id = ?";
+			ps = con.prepareStatement(query);
+			ps.setString(1, id);
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
-				String id = rs.getString("id");
-				String pw = rs.getString("pw");
-				String name = rs.getString("name");
-				String email = rs.getString("email");
-				Date joinDate = rs.getDate("joinDate");
-				
-				MemberVO vo = new MemberVO();
-				vo.setId(id);
-				vo.setPw(pw);
-				vo.setName(name);
-				vo.setEmail(email);
-				vo.setJoinDate(joinDate);
-				list.add(vo);
-			}
+			
+			rs.next();
+			memInfo.setId(rs.getString("id"));
+			memInfo.setPw(rs.getString("pw"));
+			memInfo.setName(rs.getString("name"));
+			memInfo.setEmail(rs.getString("email"));
+			memInfo.setJoinDate(rs.getDate("joinDate"));
+			
 			rs.close();
 			ps.close();
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return list;
+		return memInfo;
+	}
+	
+	public void modMember(MemberVO memberVO) {
+		String id = memberVO.getId();
+		String pw = memberVO.getPw();
+		String name = memberVO.getName();
+		String email = memberVO.getEmail();
+		try {
+			con = dataFactory.getConnection();
+			String query = "update t_member set pw=?,name=?,email=? where id=?";
+			ps = con.prepareStatement(query);
+			ps.setString(1, pw);
+			ps.setString(2, name);
+			ps.setString(3, email);
+			ps.setString(4, id);
+			ps.executeUpdate();
+			
+			ps.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
 

@@ -1,0 +1,208 @@
+답변형 게시판 
+
+답변형 게시판 테이블 구조
+-------------------------------------
+컬럼이름 : articleNO 
+속성 : 글번호 
+자료형 : number 
+크기 : 10 
+유일키여부 : Y
+NULL : not NULL
+키 : primary
+기본값 :  
+-------------------------------------
+컬럼이름 : parentNO 
+속성 : 부모글번호 
+자료형 : number 
+크기 : 10 
+유일키여부 : N
+NULL : not NULL
+키 :
+기본값 : 0
+-------------------------------------
+컬럼이름 : title 
+속성 : 글 제목
+자료형 : varchar2 
+크기 : 100 
+유일키여부 : N
+NULL : not NULL
+키 :
+기본값 : 
+-------------------------------------
+컬럼이름 : content 
+속성 : 글 내용
+자료형 : varchar2 
+크기 : 4000 
+유일키여부 : N
+NULL : not NULL
+키 :
+기본값 : 
+-------------------------------------
+컬럼이름 : imageFileName 
+속성 : 이미지 파일 이름
+자료형 : varchar2
+크기 : 100
+유일키여부 : N
+NULL : not NULL
+키 :
+기본값 :
+-------------------------------------
+컬럼이름 : writeDate 
+속성 : 작성일
+자료형 : date 
+크기 : 
+유일키여부 : N
+NULL : not NULL
+키 :
+기본값 : sysdate
+-------------------------------------
+컬럼이름 : id 
+속성 : 작성자 ID
+자료형 : varchar2
+크기 : 
+유일키여부 : N
+NULL : not NULL
+키 : 외래키
+기본값 : 
+=====================================
+
+글번호 : 글이 추가 될 때 마다 1씩 증가하는 고유값으로 사용한다.
+부모글번호 : 답변을 단 부모글의 번호를 나타낸다. 부모글 번호가
+0이면 자신이 부모글이다.
+첨부파일 이름 : 글 작성시 첨부한 이미지 파일 이름이다.
+작성자 ID : 글을 작성한 작성자의 ID이다.
+
+                 글 부 
+안녕하세요 [1 0]
+ -> 반갑습니다 [1 1]
+ 	-> 감사합니다 [1 2]
+ 	
+=====================================
+create table t_Board(
+	articleNO number(10) primary key,
+	parentNO number(10) default 0,
+	title varchar2(500) not null,
+	content varchar2(4000),
+	imageFileName varchar2(30),
+	writedate date default sysdate not null,
+	id varchar2(10),
+	CONSTRAINT FK_ID FOREIGN KEY(id)
+	REFERENCES t_member(id)
+);
+
+================================
+
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(1,0,'테스트글입니다.','테스트글입니다.',null,sysdate,'Hong');
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(2,0,'안녕하세요.','상품후기 입니다.',null,sysdate,'Hong');
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(3,2,'답변입니다.','상품 후기에 대한 답변입니다.',null,sysdate,'Hong');
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(5,3,'답변입니다.','상품 좋습니다.',null,sysdate,'Lee');
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(4,0,'김유신입니다.','김유신 테스트글입니다.',null,sysdate,'Kim');
+insert into t_board(articleNO,parentNO,title,content,imageFileName,writedate,id) values(6,2,'상품 후기 입니다.','이순신씨의 상품 사용 후기입니다.',null,sysdate,'Lee');
+
+=====================================
+View : JSP
+Controller : BoardFrontController
+Model : BoardService , BoardDAO
+
+단위기능
+- 사용자 입장에서 하나의 논리적인 기능
+
+웹 애플리케이션의 일반적인 단위 기능 예
+- 게시판 글 조회시 해당 글을 조회하는 기능과 조회 수를 갱신하는 것'
+- 쇼핑몰에서 상품 주문 시 주문 상품을 테이블에 등록 후 주문자의
+포인트를 갱신하는 기능
+- 은행에서 송금할 때 송금자의 잔고를 갱신하는 기능과 수신자의
+잔고를 갱신 하느 기능
+
+- Service 클래스의 메서드를 이용해 큰 기능을 단위 기능으로 나눈
+후 Service 클래스의 각 메서드는 자신의 기능을 더 세부적인 기능
+을 하는 DAO의 SQL문들을 조합해서 구현한다.
+- 유지보수나 시스템의 확장성 면에서 훨씬 유리하다.
+
+게시판 단위 기능
+- 새 글 쓰기
+- 글 보기
+- 글 수정하기
+- 글 삭제하기
+
+select 
+	level, articleNO, parentNO, lpad(' ',4*(level-1)) || title title, content, writeDate 
+	from t_board 
+	Start with parentNO=0 
+	Connect by prior articleNO=parentNO 
+	order siblings by articleNO desc;
+
+- level : 오라클에서 제공, 가상컬럼,
+		    계층구조의 레벨을 나타내며 기준은 (Start with ~S~ Connect by prior A B)로 인해 정해진 계층구조를 기반으로 정해진다.
+
+- lpad() : 함수, lpad/rpad, 지정한 값 만큼 특정 문자로 채워줌
+		   lpad('채움문자', '총 문자길이')
+	- title title > 이렇게 컬럼명 두개를 스페이스바 로 나열하면 그냥 title 하나로 인식
+	- || 문자열 합치기 : ex) 'a' || 'b'  -->  'ab' 
+	
+- Start with ~S~ Connect by prior A B :  
+	1. S의 조건을 만족하는 열을 기준으로 계층구조를 쌓아라.
+	2. 방금 전 행의(기준) A의값이 자신의 B의 값과 일치하는 행을 찾아라
+	Ex) Start with parentNO=0 Connect by prior articleNO=parentNO
+		: 우선 parentNO가 0인 것을 찾아 해당 행의 aricleNO의 값이 자신의 parentNO에 해당하는 행을 찾아라.
+
+- order siblings by articleNO desc : articleNO 기준으로 내림차순 하되 연관되있는 위의 계층구조를 망가트리지 마라
+
+* title title > 이렇게 컬럼명 두개를 스페이스바 로 나열하면 그냥 title 하나로 인식
+* 
+
+===========================================================================
+
+글쓰기 구현
+1. 글 목록창에서 글쓰기창을 요청
+2. 글쓰기창에서 글을 입력하고 컨트롤러에 /board/addArticle.do 로 글쓰기 요청
+3. 컨트롤러에서 Service 클래스로 글쓰기창에서 입력한 글 정보를 전달해 테이블에 글을 추가
+4. 새 글을 추가하고
+
+======================================
+업로드한 파일을 글번호 이름의 폴더에 저장하는 과정
+1. 글쓰기창에서 새글 전송시 컨트롤러의 upload() 메서드를 호출하여새 글 정보를 Map으로 반환 받고 첨부한 파일은 임시로 temp폴더에 업로드함
+2. 컨트롤러는 Service 클래스의 addNewArticle() 메서드를 호]
+출하면서 새글 정보를 인잘로 전달해 테이블에 추가한 후 새글 번호를 반
+환 받음
+3. 컨트롤러에서 반환받은 새글 번홀를 이용해 파일 저장소에 새글 번호
+로 폴더를 생성하고 temp 폴더의 파일을 새글 번호 폴더로 이동
+
+======================================
+
+글 상세 기능을 구현하는 과정
+1. 글목록창에서 글 제목을 클릭해 컨트롤로에서 
+/board/viewArticle.do?articleNO=글번호 로 요청
+2. 컨트롤러는 전송된 글 번호 글 정볼를 조회하여 글 상세창을로 포워딩
+글상세창(viewArticle.jsp)
+3. 글 상세창(viewArticle.jsp)에 글정보와 이미지 파일이 표시
+
+======================================
+
+글 수정 기능을 구현하는 과정
+1. 글 상세창(viewArticle.jsp)에서 수정하기를 클릭해 글 정보를 
+표시하는 입력창들을 활성화함
+2. 글 정보와 이미지를 수정한 후 수정반영하기를 클릭해 컨트롤러에 
+board/modArticle.do로 요청
+3. 컨트롤러는 요청에 대해 upload() 메서드를 이용하여 수정된 데이
+터를 Map에 저장하고 반환
+4. 컨트럴러는 수정된 데이터를 테이블에 반영한 후  temp 폴더에 업로
+드된 수정 이미지를 글 번호 폴더로 이동
+5. 마지막으로 글 번호 폴더 있던 원래 이미지 파일을 삭제
+
+======================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
